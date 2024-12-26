@@ -23,9 +23,7 @@ string randomString(int size, bool digit = false) {
 // returns true if a char is [0,2,4,6,8] else false
 bool is_even(char digit) {
 	digit = digit - '0';
-	if (digit % 2)
-		return false;
-	return true;
+	return digit % 2;
 }
 
 // manually pattern matching for a repeating series of "(10)*"
@@ -101,30 +99,63 @@ vector <string> largest_substring(string base) {
 	return valid_substrings;
 }
 
+
+// insures validation parameters are correct
+bool checkParameters(
+	int times,
+	int string_size
+) {
+	if (times <= 0) {
+		cout << "Invalid times parameter. Must be a positive integer, got: " << times << endl;
+		return false;
+	}
+
+	if (string_size <= 0) {
+		cout << "Invalid times parameter. Must be a positive integer, got :" << string_size << endl;
+		return false;
+	}
+	return true;
+}
+
+
+// scores the result for largest substring
+int getScore(vector<string> results) {
+	if (results.empty()) {
+		cout << "There were no even-odd alternating substrings. " << endl;
+		return 0;
+	}
+	string biggest = "";
+	for (int i = 0; i < results.size(); ++i) {
+		if (results[i].length() > biggest.length()) {
+			biggest = results[i];
+		}
+	}
+	cout << "The largest: " << biggest << "\t which has a length of: " << biggest.length() << endl;
+	return biggest.length();
+}
+
+
 // a Monte Carlo style test-validation to ensure results are within expected ranges
 void monte_validation(
 	vector<string> func(string val),
 	int times = 100,
 	int string_size = 10,
-	bool digit = 1
-	) {
+	bool digit = true
+) {
+	if (!checkParameters(times, string_size)) {
+		return;
+	}
+
 	vector <int> scores;
 
 	do {
 		string test_string = randomString(string_size, digit);
-		std::cout << "String being tested:\t" << test_string << std::endl;
+		cout << "String being tested:\t" << test_string << endl;
 
 		vector <string> results = func(test_string);
 
-		string biggest = "";
-		for (int i = 0; i < results.size(); ++i) {
-			if (results[i].length() > biggest.length()) {
-				biggest = results[i];
-			}
-		}
-
-		cout << "The largest: " << biggest << "\t which is: " << biggest.length() << endl;
-		scores.push_back(biggest.length());
+		int score = getScore(results);
+		scores.push_back(score);
 		times--;
 	} while (times > 0);
 
@@ -136,10 +167,10 @@ vector<string> reg_solution(
 	string base
 ) {
 	vector<string> x;
-	std::smatch matches;
-	std::regex reg("(([02468][13579])+)");
+	smatch matches;
+	regex reg("(([02468][13579])+)");
 
-	while (std::regex_search(base, matches, reg)) {
+	while (regex_search(base, matches, reg)) {
 		x.push_back(matches.str(1));
 		base = matches.suffix().str();
 	}
@@ -148,9 +179,19 @@ vector<string> reg_solution(
 
 
 int main() {
+	cout << "The goal of this algorithm is to identify the largest alternating even-odd substrings within a given string." << endl;
+
 	srand(time(NULL));
 
-	monte_validation(reg_solution);
+	int number_of_tests = 200;
+	int size_of_strings = 20;
+	bool digit = true;
+
+	/*
+	possible solutions are regolution or largest_substring
+	*/
+
+	monte_validation(reg_solution, number_of_tests, size_of_strings, digit);
 
 	return 0;
 }
